@@ -28,11 +28,9 @@ RUN echo ip_resolve=4 >> /etc/yum.conf && \
 # Install gosu
 ENV GOSU_VERSION 1.10
 RUN set -ex; . /usr/local/bin/proxydetect; \
-	\
 	yum -y install epel-release; \
 	yum -y install wget; \
 	yum -y install dpkg; \
-	\
 	dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
 	wget --quiet -O /usr/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch"; \
 	wget --quiet -O /tmp/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc"; \
