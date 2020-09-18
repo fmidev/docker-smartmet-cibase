@@ -48,19 +48,20 @@ RUN set -ex; . /usr/local/bin/proxydetect; \
 	yum clean all && \
  	rm -rf /tmp/* /var/cache/yum
 
-# Disable repo index caching to avoid EPEL problems
-RUN yum-config-manager --setopt=http_caching=packages --save
-
 # Preinstall some packeges and enable extra repositories
 # Yum has a (mis)feature where the return value is 0 for multiple packages if any of them succeed.
 # Have to run every install in a single command as they all need to succeed.
 # Other extra things:
 #  - install libpqxx from Postgresql 9.5 repos but disable thet repo after it
 #  - reinstall glibc-common with changed lang settings. Otherwise we get errors when using locales.
+#  - disable repo index caching to avoid EPEL problems 
+
 RUN . /usr/local/bin/proxydetect && \
  yum -y install deltarpm && \
  yum -y install rpm-build && \
  yum -y install yum-plugin-versionlock && \
+ yum -y install yum-utils && \
+ yum-config-manager --setopt=http_caching=packages --save && \
  yum -y install https://download.fmi.fi/smartmet-open/rhel/7/x86_64/smartmet-open-release-17.9.28-1.el7.fmi.noarch.rpm && \
  yum -y install llvm && \
  yum -y install ccache && \
@@ -69,7 +70,6 @@ RUN . /usr/local/bin/proxydetect && \
  yum -y install make && \
  yum -y install sudo && \
  yum -y install rpmlint && \
- yum -y install yum-utils && \
  yum -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
  yum-config-manager --disable "pgdg*" && \
  yum-config-manager --enable pgdg-common pgdg95 && \
