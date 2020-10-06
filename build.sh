@@ -2,16 +2,9 @@
 
 cd `dirname $0`
 
-# Establish OS version
-if grep -q -i "release 7" /etc/redhat-release ; then
-  imagenamefile=imagename7.txt
-elif grep -q -i "release 8" /etc/redhat-release ; then
-  imagenamefile=imagename8.txt
-else
-  echo "Running neither RHEL7.x nor RHEL 8.x !"
-  exit 1
-fi
+$VERSION=$1
 
+imagenamefile=imagename${VERSION}.txt
 
 testfile=.buildage
 
