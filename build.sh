@@ -2,9 +2,7 @@
 
 cd `dirname $0`
 
-$VERSION=$1
-
-imagenamefile=imagename${VERSION}.txt
+VERSION=$1
 
 testfile=.buildage
 
@@ -18,9 +16,9 @@ test ! -r "$testfile" || (
 param=""
 
 if [ -e "$testfile" ] ; then
-	docker build -t $(cat $imagenamefile) .
+	docker build -t smartmet-cibase-${VERSION} -f Dockerfile.${VERSION} .
 else
-	docker build --no-cache -t $(cat $imagenamefile) .
+	docker build --no-cache -t smartmet-cibase-${VERSION} -f Dockerfile.${VERSION} .
 fi
 
 # Create timestamp with current time if not already there
