@@ -115,7 +115,7 @@ RUN mkdir -m 777 /ccache && \
 # may become large accidentally.
 # Also make some other last minute modifications
 RUN sed -i -e 's/keepcache=0//' /etc/yum.conf && \
-    sed -i -e 's/^127.0.0.1.*/& smartmet-test/' /etc/hosts && \
+    sed -c -i -e 's/^127.0.0.1.*/& smartmet-test/' /etc/hosts && \
     echo keepcache=1 >> /etc/yum.conf && \
     echo 'PATH=/usr/local/bin:$PATH' >> /etc/bashrc && \
     echo 'export PATH' >> /etc/bashrc
