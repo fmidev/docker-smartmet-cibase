@@ -117,8 +117,7 @@ RUN mkdir -m 777 /ccache && \
 RUN sed -i -e 's/keepcache=0//' /etc/yum.conf && \
     echo keepcache=1 >> /etc/yum.conf && \
     echo 'PATH=/usr/local/bin:$PATH' >> /etc/bashrc && \
-    echo 'export PATH' >> /etc/bashrc && \
-    timedatectl set-timezone Europe/Helsinki
+    echo 'export PATH' >> /etc/bashrc
 
 # Run final stuff as rpmbuild
 USER rpmbuild
