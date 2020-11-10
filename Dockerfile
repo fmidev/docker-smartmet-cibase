@@ -118,7 +118,7 @@ RUN sed -i -e 's/keepcache=0//' /etc/yum.conf && \
     echo keepcache=1 >> /etc/yum.conf && \
     echo 'PATH=/usr/local/bin:$PATH' >> /etc/bashrc && \
     echo 'export PATH' >> /etc/bashrc && \
-    datetimectl set-timezone Europe/Helsinki
+    timedatectl set-timezone Europe/Helsinki
 
 # Run final stuff as rpmbuild
 USER rpmbuild
