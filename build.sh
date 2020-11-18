@@ -13,7 +13,7 @@ test ! -r "$testfile" || (
 param=""
 
 if [ -e "$testfile" ] ; then
-	docker build `cat imagename.txt` .
+	docker build -t `cat imagename.txt` .
 else
 	docker build --no-cache -t `cat imagename.txt` .
 fi
