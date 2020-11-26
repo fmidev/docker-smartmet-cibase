@@ -64,7 +64,8 @@ RUN . /usr/local/bin/proxydetect && \
  yum -y install llvm && \
  yum -y install ccache && \
  yum -y install createrepo_c && \
- yum -y install git && \
+ yum -y install git git-lfs && \
+ git lfs install --skip-repo && \
  yum -y install make && \
  yum -y install sudo && \
  yum -y install rpmlint && \
