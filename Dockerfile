@@ -58,6 +58,7 @@ RUN . /usr/local/bin/proxydetect && \
  yum -y install deltarpm && \
  yum -y install rpm-build && \
  yum -y install yum-plugin-versionlock && \
+ yum -y install yum-plugin-priorities && \
  yum -y install yum-utils && \
  yum-config-manager --setopt=http_caching=packages --save && \
  yum -y install https://download.fmi.fi/smartmet-open/rhel/7/x86_64/smartmet-open-release-17.9.28-1.el7.fmi.noarch.rpm && \
