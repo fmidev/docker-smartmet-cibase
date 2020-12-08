@@ -59,8 +59,5 @@ workflows:
     triggers:
       - schedule:
           cron: "8 11 * * *"
-          filters:
-            branches:
-              only: master
     jobs:
       - hub
