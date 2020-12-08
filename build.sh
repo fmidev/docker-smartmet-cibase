@@ -16,9 +16,9 @@ test ! -r "$testfile" || (
 param=""
 
 if [ -e "$testfile" ] ; then
-	docker build --add-host smartmet-test:127.0.0.1 -t smartmet-cibase-${VERSION} -f Dockerfile.${VERSION} .
+	docker build -t smartmet-cibase-${VERSION} -f Dockerfile.${VERSION} .
 else
-	docker build --add-host smartmet-test:127.0.0.1 --no-cache -t smartmet-cibase-${VERSION} -f Dockerfile.${VERSION} .
+	docker build --no-cache -t smartmet-cibase-${VERSION} -f Dockerfile.${VERSION} .
 fi
 
 # Create timestamp with current time if not already there
