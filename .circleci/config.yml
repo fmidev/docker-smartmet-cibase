@@ -59,5 +59,8 @@ workflows:
     triggers:
       - schedule:
           cron: "8 11 * * *"
+          filters:
+            branches:
+              only: master rhel7-8
     jobs:
       - hub
