@@ -33,7 +33,7 @@ jobs:
           command: |
              pwd
              ls
-             ./build.sh
+             ./build.sh 8
   hub:
     docker:
       - image: alpine:latest
@@ -59,8 +59,5 @@ workflows:
     triggers:
       - schedule:
           cron: "8 11 * * *"
-          filters:
-            branches:
-              only: master
     jobs:
       - hub
