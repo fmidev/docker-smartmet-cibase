@@ -142,7 +142,7 @@ for step in $* ; do
         echo "List of RPMs produced:"
         cat "$tmpd/$mname.lst"
 	echo "Removing SRPMs"
-	rm -f "$tmpd"/*.src.rpm
+	rm -f $tmpd/*.src.rpm
         mv "$tmpd"/* "$DISTDIR"
 	    echo "Distribution files and file list are now in $DISTDIR"
 	    ;;
