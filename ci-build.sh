@@ -105,7 +105,7 @@ test -w /ccache/. || sudo chown -R `id -u` /ccache/.
 for step in $* ; do
     case $step in
 	install)
-	    insudo yum install -y $DISTDIR/*.rpm
+	    insudo yum install -y $(ls -1 $DISTDIR/*.rpm | grep -v src.rpm)
 	    ;;
 	deps)
 	    insudo yum -y clean all
@@ -141,9 +141,7 @@ for step in $* ; do
         set +x
         echo "List of RPMs produced:"
         cat "$tmpd/$mname.lst"
-	echo "Removing SRPMs"
-	rm -f $tmpd/*.src.rpm
-        mv "$tmpd"/* "$DISTDIR"
+        mv $(ls -1 $tmpd/*.rpm | grep -v src.rpm) "$DISTDIR"
 	    echo "Distribution files and file list are now in $DISTDIR"
 	    ;;
 	dummy)
