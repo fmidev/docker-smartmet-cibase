@@ -1,6 +1,9 @@
 #!/bin/bash -ex
 
 cd `dirname $0`
+
+VERSION=$1
+
 testfile=.buildage
 
 # Force rebuild without cache every 24 hours
@@ -13,9 +16,9 @@ test ! -r "$testfile" || (
 param=""
 
 if [ -e "$testfile" ] ; then
-	docker build -t `cat imagename.txt` .
+	docker build -t smartmet-cibase-${VERSION} -f Dockerfile.${VERSION} .
 else
-	docker build --no-cache -t `cat imagename.txt` .
+	docker build --no-cache -t smartmet-cibase-${VERSION} -f Dockerfile.${VERSION} .
 fi
 
 # Create timestamp with current time if not already there
