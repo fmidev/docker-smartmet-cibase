@@ -76,7 +76,7 @@ RUN . /usr/local/bin/proxydetect && \
  dnf config-manager --enable pgdg-common pgdg12 && \
  dnf config-manager --disable epel-source && \
  dnf -y update && \
- dnf -y install postgresql12-libs postgis30_12-client && \
+ dnf -y install postgresql12-libs postgis31_12-client && \
  dnf -y reinstall --setopt=override_install_langs='' --setopt=tsflags='' glibc-common && \
  dnf clean all && \
  rm -rf /var/cache/yum
