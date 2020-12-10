@@ -5,7 +5,36 @@ version: 2.0
 # On commit, Dockerfile should be tested first and then initiate a rebuild
 
 jobs:
-  build:
+  build-7:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run:
+          name: Install packages
+          command: |
+           apk add bash
+           apk add curl
+           apk add git
+           apk add gzip
+           apk add openssh
+           apk add yajl-tools
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install Docker client
+          command: |
+            set -x
+            VER="18.09.1"
+            curl -L -o /tmp/docker-$VER.tgz https://download.docker.com/linux/static/stable/x86_64/docker-$VER.tgz
+            tar -xz -C /tmp -f /tmp/docker-$VER.tgz
+            mv /tmp/docker/* /usr/bin
+      - run:
+          name: Build Docker image
+          command: |
+             pwd
+             ls
+             ./build.sh 7
+  build-8:
     docker:
       - image: alpine:latest
     steps:
@@ -51,16 +80,19 @@ workflows:
   version: 2
   commit:
     jobs:
-      - build
+      - build-7
+      - build-8
       - hub:
          requires: 
-          - build
+          - build-7
+          - build-8
+
   scheduled:
     triggers:
       - schedule:
           cron: "8 11 * * *"
           filters:
             branches:
-              only: master rhel7-8
+              only: master
     jobs:
       - hub
