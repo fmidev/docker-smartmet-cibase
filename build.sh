@@ -21,6 +21,8 @@ else
 	docker build --no-cache -t smartmet-cibase-${VERSION} -f Dockerfile.${VERSION} .
 fi
 
+docker push smartmet-cibase-${VERSION}:latest
+
 # Create timestamp with current time if not already there
 test ! -e "$testfile" && touch "$testfile"
 exit 0
