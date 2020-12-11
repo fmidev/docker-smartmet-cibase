@@ -37,11 +37,12 @@ RUN set -ex; . /usr/local/bin/proxydetect && \
 	export GNUPGHOME="$(mktemp -d)" && \
 	rm -fr "$GNUPGHOME" /tmp/gosu.asc && \
 	chmod +xs /usr/bin/gosu && \
-# verify that the binary works
 	gosu nobody true && \
 	dnf -y remove dpkg && \
 	dnf clean all && \
  	rm -rf /tmp/* /var/cache/yum
+
+# gosu nobody true: verify that the binary works
 
 # Signature verification could be done above:
 #	gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 ; \
