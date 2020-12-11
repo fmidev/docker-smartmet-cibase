@@ -5,7 +5,7 @@ version: 2.0
 # On commit, Dockerfile should be tested first and then initiate a rebuild
 
 jobs:
-  build-7:
+  build-rhel7:
     docker:
       - image: alpine:latest
     steps:
@@ -34,7 +34,7 @@ jobs:
              pwd
              ls
              ./build.sh 7
-  build-8:
+  build-rhel8:
     docker:
       - image: alpine:latest
     steps:
@@ -80,12 +80,12 @@ workflows:
   version: 2
   commit:
     jobs:
-      - build-7
-      - build-8
+      - build-rhel7
+      - build-rhel8
       - hub:
          requires: 
-          - build-7
-          - build-8
+          - build-rhel7
+          - build-rhel8
 
   scheduled:
     triggers:
