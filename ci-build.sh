@@ -130,18 +130,18 @@ for step in $* ; do
 	       cat $test_disable  ) || CXX=clang++ make -j "$RPM_BUILD_NCPUS" test
 	    ;;
 	rpm)
+            set +x
 	    CXX=clang++ make -j "$RPM_BUILD_NCPUS" rpm
 	    tmpd=`mktemp -d`
 	    for d in /root/rpmbuild $HOME/rpmbuild ; do
 			test ! -d "$d" || find "$d" -name \*.rpm -exec sudo mv -v {} "$tmpd" \;
 	    done
-        mkdir -p $HOME/dist
-        mname=`basename *.spec .spec`
-        ( cd "$tmpd" ; ls *.rpm > "$mname.lst" )
-        set +x
-        echo "List of RPMs produced:"
-        cat "$tmpd/$mname.lst"
-        mv $(ls -1 $tmpd/*.rpm | grep -v src.rpm) "$DISTDIR"
+            mkdir -p $HOME/dist
+            mname=`basename *.spec .spec`
+            ( cd "$tmpd" ; ls *.rpm > "$mname.lst" )
+            echo "List of RPMs produced:"
+            cat "$tmpd/$mname.lst"
+            mv $(ls -1 $tmpd/*.rpm | grep -v src.rpm) "$DISTDIR"
 	    echo "Distribution files and file list are now in $DISTDIR"
 	    ;;
 	dummy)
