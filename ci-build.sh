@@ -138,7 +138,7 @@ for step in $* ; do
 	    done
             mkdir -p $HOME/dist
             mname=$(basename *.spec .spec)
-	    mfile="$tmpd/$mname.lst"
+	    mfile="$DISTDIR/$mname.lst"
 	    echo Creating $mfile
 	    pushd .
             cd "$tmpd"
