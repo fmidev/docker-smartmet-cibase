@@ -140,7 +140,7 @@ for step in $* ; do
             mname=$(basename *.spec .spec)
 	    mfile="$tmpd/$mname.lst"
 	    echo Creating $mfile
-	    pushd
+	    pushd .
             cd "$tmpd"
 	    ls *.rpm > "$mfile"
 	    popd
