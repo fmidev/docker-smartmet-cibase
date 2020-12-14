@@ -137,10 +137,15 @@ for step in $* ; do
 			test ! -d "$d" || find "$d" -name \*.rpm -exec sudo mv -v {} "$tmpd" \;
 	    done
             mkdir -p $HOME/dist
-            mname=`basename *.spec .spec`
-            ( cd "$tmpd" ; ls *.rpm > "$mname.lst" )
+            mname=$(basename *.spec .spec)
+	    mfile="$tmpd/$mname.lst"
+	    echo Creating $mfile
+	    pushd
+            cd "$tmpd"
+	    ls *.rpm > "$mfile"
+	    popd
             echo "List of RPMs produced:"
-            cat "$tmpd/$mname.lst"
+            cat "$mfile"
             mv $(ls -1 $tmpd/*.rpm | grep -v src.rpm) "$DISTDIR"
 	    echo "Distribution files and file list are now in $DISTDIR"
 	    ;;
