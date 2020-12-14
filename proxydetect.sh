@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 tmpf=`mktemp`
 proxyfile=/tmp/proxysetup
