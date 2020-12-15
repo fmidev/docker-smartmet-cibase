@@ -70,6 +70,7 @@ RUN . /usr/local/bin/proxydetect && \
  yum -y install make && \
  yum -y install sudo && \
  yum -y install rpmlint && \
+ yum -y install centos-release-scl &&  \
  yum -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
  yum-config-manager --disable "pgdg*" && \
  yum-config-manager --enable pgdg-common pgdg12 && \
