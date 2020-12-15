@@ -6,9 +6,9 @@ VERSION=$1
 
 testfile=.buildage
 
-# Force rebuild without cache every 24 hours
+# Force rebuild without cache every 1 hour
 test ! -r "$testfile" || (
-    if [ `stat --format=%Y $testfile` -le $(( `date +%s` - 86400 )) ] ; then
+    if [ `stat --format=%Y $testfile` -le $(( `date +%s` - 3600 )) ] ; then
 	rm -f "$testfile"
     fi
 )
