@@ -72,7 +72,7 @@ RUN . /usr/local/bin/proxydetect && \
  yum -y install rpmlint && \
  yum -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
  yum-config-manager --disable "pgdg*" && \
- yum-config-manager --enable pgdg-common pgdg95 && \
+ yum-config-manager --enable pgdg-common pgdg12 && \
  yum-config-manager --setopt="epel.exclude=librsvg2*" --save && \
  yum-config-manager --disable epel-source && \
  yum -y update && \
