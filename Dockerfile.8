@@ -55,6 +55,7 @@ RUN set -ex; . /usr/local/bin/proxydetect && \
 # Other extra things:
 #  - install libpqxx from Postgresql 12 repos but disable thet repo after it
 #  - reinstall glibc-common with changed lang settings. Otherwise we get errors when using locales.
+#    Not sure if this is necessary anymore. Installing glibc-all-langpacks could fix the issue
 #  - http caching is disabled to avoid EPEL problems
 
 RUN . /usr/local/bin/proxydetect && \
@@ -79,9 +80,12 @@ RUN . /usr/local/bin/proxydetect && \
  dnf config-manager --enable pgdg-common pgdg12 && \
  dnf config-manager --disable epel-source && \
  dnf -y update && \
- dnf -y reinstall --setopt=override_install_langs='' --setopt=tsflags='' glibc-common && \
+ dnf -y install langpacks-en glibc-all-langpacks && \
  dnf clean all && \
  rm -rf /var/cache/yum
+
+# RHEL7 way is below, RHEL8 way is to install glibc-all-langpacks:
+# dnf -y reinstall --setopt=override_install_langs='' --setopt=tsflags='' glibc-common
 
 
 ## Configure sudo
