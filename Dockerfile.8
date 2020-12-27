@@ -80,7 +80,7 @@ RUN . /usr/local/bin/proxydetect && \
  dnf config-manager --enable pgdg-common pgdg12 && \
  dnf config-manager --disable epel-source && \
  dnf -y update && \
- dnf -y install "glibc-langpack-*" && 
+ dnf -y install "glibc-langpack-*" && \
  dnf clean all && \
  rm -rf /var/cache/yum
 
