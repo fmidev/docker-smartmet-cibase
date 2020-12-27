@@ -80,11 +80,14 @@ RUN . /usr/local/bin/proxydetect && \
  dnf config-manager --enable pgdg-common pgdg12 && \
  dnf config-manager --disable epel-source && \
  dnf -y update && \
- dnf -y install langpacks-en glibc-all-langpacks && \
+ dnf -y install "glibc-langpack-*" && 
  dnf clean all && \
  rm -rf /var/cache/yum
 
-# RHEL7 way is below, RHEL8 way is to install glibc-all-langpacks:
+# RHEL7 way is below, RHEL8 way is to supposedly install glibc-all-langpacks, but it seems to be
+# broken in CentOS 8. Hence we install the langpacks with a pattern
+#
+# RHEL7:
 # dnf -y reinstall --setopt=override_install_langs='' --setopt=tsflags='' glibc-common
 
 
