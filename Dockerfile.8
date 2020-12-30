@@ -81,6 +81,7 @@ RUN . /usr/local/bin/proxydetect && \
  dnf config-manager --disable epel-source && \
  dnf -y update && \
  dnf -y install "glibc-langpack-*" && \
+ ln -sf /usr/share/zoneinfo/Europe/Helsinki /etc/localtime && \
  dnf clean all && \
  rm -rf /var/cache/yum
 
