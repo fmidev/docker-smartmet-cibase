@@ -1,98 +1,125 @@
-version: 2.0
-
-# The goal here is to generate updated(i.e. updates installed) base image every day.
-# This requires scheduled workflow
-# On commit, Dockerfile should be tested first and then initiate a rebuild
-
+version: 2.1
 jobs:
   build-rhel7:
     docker:
-      - image: alpine:latest
+      - image: fmidev/smartmet-cibase-7:latest
     steps:
-      - run:
-          name: Install packages
-          command: |
-           apk add bash
-           apk add curl
-           apk add git
-           apk add gzip
-           apk add openssh
-           apk add yajl-tools
       - checkout
-      - setup_remote_docker
       - run:
-          name: Install Docker client
-          command: |
-            set -x
-            VER="18.09.1"
-            curl -L -o /tmp/docker-$VER.tgz https://download.docker.com/linux/static/stable/x86_64/docker-$VER.tgz
-            tar -xz -C /tmp -f /tmp/docker-$VER.tgz
-            mv /tmp/docker/* /usr/bin
+          name: Install build dependencies
+          command: ci-build deps
       - run:
-          name: Build Docker image
+          name: Build RPM
+          command: ci-build rpm
+      - persist_to_workspace:
+          root: /dist
+          paths: ./*.rpm
+  test-rhel7:
+    docker:
+      - image: fmidev/smartmet-cibase-7:latest
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /dist
+      - run:
+          name: Installation test
+          command: ci-build dummy ; sudo yum install -y /dist/*.rpm
+      - run:
+          name: Test prepare
+          command: ci-build testprep
+      - run:
+          name: Test
+          command: ci-build test
+      - store_artifacts:
+          path: /dist
+          destination: dist/
+  upload-rhel7:
+    docker:
+      - image: fmidev/smartmet-cibase-7:latest
+    steps:
+      - attach_workspace:
+          at: /dist
+      - run:
+          name: Installing AWS CLI
+          working_directory: /
           command: |
-             pwd
-             ls
-             ./build.sh 7
+            sudo yum -y install dnf
+            sudo dnf -y install python3-pip
+            pip3 install awscli --upgrade --user
+      - run:
+          name: Sync artifacts to S3
+          command: |
+            export PATH=$PATH:~/.local/bin
+            aws s3 cp /dist s3://fmi-smartmet-cicd-beta/centos7/ --recursive
   build-rhel8:
     docker:
-      - image: alpine:latest
+      - image: fmidev/smartmet-cibase-8:latest
     steps:
-      - run:
-          name: Install packages
-          command: |
-           apk add bash
-           apk add curl
-           apk add git
-           apk add gzip
-           apk add openssh
-           apk add yajl-tools
       - checkout
-      - setup_remote_docker
       - run:
-          name: Install Docker client
-          command: |
-            set -x
-            VER="18.09.1"
-            curl -L -o /tmp/docker-$VER.tgz https://download.docker.com/linux/static/stable/x86_64/docker-$VER.tgz
-            tar -xz -C /tmp -f /tmp/docker-$VER.tgz
-            mv /tmp/docker/* /usr/bin
+          name: Install build dependencies
+          command: ci-build deps
       - run:
-          name: Build Docker image
-          command: |
-             pwd
-             ls
-             ./build.sh 8
-  hub:
+          name: Build RPM
+          command: ci-build rpm
+      - persist_to_workspace:
+          root: /dist
+          paths: ./*.rpm
+  test-rhel8:
     docker:
-      - image: alpine:latest
+      - image: fmidev/smartmet-cibase-8:latest
     steps:
-      - run:
-          name: Install packages
-          command: |
-           apk add curl
-           apk add git
-           apk add openssh
-           apk add yajl-tools
       - checkout
-          
+      - attach_workspace:
+          at: /dist
+      - run:
+          name: Installation test
+          command: ci-build dummy ; sudo yum install -y /dist/*.rpm
+      - run:
+          name: Test prepare
+          command: ci-build testprep
+      - run:
+          name: Test
+          command: ci-build test
+      - store_artifacts:
+          path: /dist
+          destination: dist/
+  upload-rhel8:
+    docker:
+      - image: fmidev/smartmet-cibase-7:latest
+    steps:
+      - attach_workspace:
+          at: /dist
+      - run:
+          name: Installing AWS CLI
+          working_directory: /
+          command: |
+            sudo yum -y install dnf
+            sudo dnf -y install python3-pip
+            pip3 install awscli --upgrade --user
+      - run:
+          name: Sync artifacts to S3
+          command: |
+            export PATH=$PATH:~/.local/bin
+            aws s3 cp /dist s3://fmi-smartmet-cicd-beta/centos8/ --recursive
+
 workflows:
-  version: 2
-  commit:
+  version: 2.1
+  build-test:
     jobs:
       - build-rhel7
       - build-rhel8
-      - hub:
-         requires: 
-          - build-rhel7
-          - build-rhel8
-
-  scheduled:
-    triggers:
-      - schedule:
-          cron: "8 11 * * *"
-          filters:
-            branches:
-              only: master
-    jobs:
-      - hub
+      - test-rhel7:
+          requires:
+            - build-rhel7
+      - test-rhel8:
+          requires:
+            - build-rhel8
+      - upload-rhel7:
+          context: fmi-global
+          requires:
+            - test-rhel7
+      - upload-rhel8:
+          context: fmi-global
+          requires:
+            - test-rhel8
