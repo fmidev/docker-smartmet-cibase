@@ -127,11 +127,11 @@ for step in $* ; do
 	    test -r $test_disable && (
 	       set +x 
 	       echo "Test step disabled by existence of $test_disable, remove to enable tests"
-	       cat $test_disable  ) || CXX=clang++ make -j "$RPM_BUILD_NCPUS" test
+	       cat $test_disable  ) || CXX=g++ make -j "$RPM_BUILD_NCPUS" test
 	    ;;
 	rpm)
             set +x
-	    CXX=clang++ make -j "$RPM_BUILD_NCPUS" rpm
+	    CXX=g++ make -j "$RPM_BUILD_NCPUS" rpm
 	    tmpd=`mktemp -d`
 	    for d in /root/rpmbuild $HOME/rpmbuild ; do
 			test ! -d "$d" || find "$d" -name \*.rpm -exec sudo mv -v {} "$tmpd" \;
