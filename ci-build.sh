@@ -37,8 +37,11 @@ if [ "$CIRCLE_BUILD_NUM" ] ; then
 	# Running inside real CircleCI cloud service(not local simulation/other CI system)
 	# CircleCI cloud shows excessive amounts of CPUs but has very little memory
 	# Using multiple jobs will cause out-of-memory errors and compiles will fail.
-	# Limit the amount of CPUs to use there
-	RPM_BUILD_NCPUS=3
+        # Limit the amount of CPUs to use there. Allow override for current project
+        # when provided
+        if [ -z "$RPM_BUILD_NCPUS" ] ; then
+	    RPM_BUILD_NCPUS=3
+	fi
 else
 	# Local builds don't have a build number
 	# Using the maximum available
