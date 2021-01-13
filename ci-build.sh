@@ -21,12 +21,14 @@ function insudo {
 function usage { 
 	echo "usage: `basename $0` step [step] ..." >&2
 	echo "where steps are executed in order given and might be one of:" >&2
-	echo "  deps     Prepare for building such as installation of dependencies" >&2
-	echo "  rpm      Build rpms and move over to directory defined by DISTDIR" >&2
-	echo "  install  Install all files in DISTDIR" >&2
-	echo "  testprep Prepare for testing i.e. install dependencies" >&2
-	echo "           Also links library files to test to work dir" >&2
-	echo "  test     Run make test" >&2
+	echo "  deps         Prepare for building such as installation of dependencies" >&2
+	echo "  rpm          Build rpms and move over to directory defined by DISTDIR" >&2
+	echo "  install      Install all files in DISTDIR" >&2
+	echo "  testprep     Prepare for testing i.e. install dependencies" >&2
+	echo "               Also links library files to test to work dir" >&2
+	echo "  test         Run make test" >&2
+	echo "  target param Run build of provided make target (exactly one parameter" >&2
+	echo "               must be provided)" >&2
 	echo "">&2
 	echo "DISTDIR=$DISTDIR" >&2
 	exit 1
@@ -109,7 +111,9 @@ echo DISTDIR: $DISTDIR
 test -w /ccache/. || sudo chown -R `id -u` /ccache/.
 
 
-for step in $* ; do
+while ! [ -z "$*" ] ; do
+    step=$1
+    shift
     case $step in
 	install)
 	    insudo yum install -y $(ls -1 $DISTDIR/*.rpm | grep -v src.rpm)
@@ -135,6 +139,16 @@ for step in $* ; do
 	       set +x 
 	       echo "Test step disabled by existence of $test_disable, remove to enable tests"
 	       cat $test_disable  ) || CXX=g++ make -j "$RPM_BUILD_NCPUS" test
+	    ;;
+	target)
+	    target=$1;
+	    shift;
+	    if [ -r .circleci/${target}_disable ] ; then
+		set +x
+		echo "target $target step disabled by existence of ${target}_disable, remove to enable the step"
+	    else
+		CXX=g++ make -j "$RPM_BUILD_NCPUS" $target
+	    fi
 	    ;;
 	rpm)
             set +x
