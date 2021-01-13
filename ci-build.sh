@@ -108,8 +108,9 @@ set -ex
 echo DISTDIR: $DISTDIR
 
 # Make sure ccache is actually writable if it is available
-test -w /ccache/. || sudo chown -R `id -u` /ccache/.
-
+if [ -d /ccache ] ; then
+    test -w /ccache/. || sudo chown -R `id -u` /ccache/.
+fi
 
 while ! [ -z "$*" ] ; do
     step=$1
