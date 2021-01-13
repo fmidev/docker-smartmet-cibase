@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ -f .circleci/local-config ] ; then
+    source .circleci/local-config
+fi
+
 function insudo {
     user=`whoami`
     if [ "$user" = "root" ] ; then
