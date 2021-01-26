@@ -139,7 +139,7 @@ while ! [ -z "$*" ] ; do
 	    test -r $test_disable && (
 	       set +x 
 	       echo "Test step disabled by existence of $test_disable, remove to enable tests"
-	       cat $test_disable  ) || CXX=g++ make -j "$RPM_BUILD_NCPUS" test
+	       cat $test_disable  ) || CXX=clang++ make -j "$RPM_BUILD_NCPUS" test
 	    ;;
 	target)
 	    target=$1;
@@ -148,12 +148,12 @@ while ! [ -z "$*" ] ; do
 		set +x
 		echo "target $target step disabled by existence of ${target}_disable, remove to enable the step"
 	    else
-		CXX=g++ make -j "$RPM_BUILD_NCPUS" $target
+		CXX=clang++ make -j "$RPM_BUILD_NCPUS" $target
 	    fi
 	    ;;
 	rpm)
             set +x
-	    CXX=g++ make -j "$RPM_BUILD_NCPUS" rpm
+	    CXX=clang++ make -j "$RPM_BUILD_NCPUS" rpm
 	    tmpd=`mktemp -d`
 	    for d in /root/rpmbuild $HOME/rpmbuild ; do
 			test ! -d "$d" || find "$d" -name \*.rpm -exec sudo mv -v {} "$tmpd" \;
