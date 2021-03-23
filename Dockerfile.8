@@ -78,7 +78,7 @@ RUN . /usr/local/bin/proxydetect && \
  dnf -y module disable postgresql:12 && \
  dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
  dnf config-manager --disable "pgdg*" && \
- dnf config-manager --disable epel-source && \
+ dnf config-manager --disable "*source*" && \
  dnf -y update && \
  dnf -y install "glibc-langpack-*" && \
  ln -sf /usr/share/zoneinfo/Europe/Helsinki /etc/localtime && \
