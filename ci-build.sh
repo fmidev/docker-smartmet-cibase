@@ -121,7 +121,7 @@ while ! [ -z "$*" ] ; do
 	    ;;
 	deps)
 	    insudo yum -y clean all
-	    insudo yum-builddep -y *.spec
+	    insudo yum-builddep --disablerepo="*source*" -y *.spec
 	    ;;
 	testprep)
 	    # Symbolically link already installed smartmet .so and .a files here
