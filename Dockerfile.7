@@ -52,7 +52,8 @@ RUN set -ex; . /usr/local/bin/proxydetect; \
 # Other extra things:
 #  - install libpqxx from Postgresql 9.5 repos but disable thet repo after it
 #  - reinstall glibc-common with changed lang settings. Otherwise we get errors when using locales.
-#  - disable repo index caching to avoid EPEL problems 
+#  - disable repo index caching to avoid EPEL problems
+#  - renames all source repos (s/source/__source) to prevent yum-builddep from picking them
 
 RUN . /usr/local/bin/proxydetect && \
  yum -y install deltarpm && \
@@ -75,7 +76,7 @@ RUN . /usr/local/bin/proxydetect && \
  yum -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
  yum-config-manager --disable "pgdg*" && \
  yum-config-manager --setopt="epel.exclude=librsvg2*" --save && \
- yum-config-manager --disable "*source*" && \
+ sed -i -e 's/-source\]$/-__source]/' /etc/yum.repos.d/*.repo && \
  yum -y update && \
  yum -y reinstall --setopt=override_install_langs='' --setopt=tsflags='' glibc-common && \
  ln -sf /usr/share/zoneinfo/Europe/Helsinki /etc/localtime && \
