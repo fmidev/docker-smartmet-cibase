@@ -1,4 +1,4 @@
-FROM rockylinux:8
+FROM rockylinux/rockylinux
 
 # A base fmi image with proper repositories in place
 
@@ -98,7 +98,7 @@ RUN mkdir -p /etc/sudoers.d && echo 'ALL ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers
 	useradd rpmbuild
 
 ## Install CirleCI CLI
-RUN curl -fLSs https://circle.ci/cli | bash
+RUN . /usr/local/bin/proxydetect && curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/master/install.sh | bash
 
 # Cleanup, leave YUM cache empty initially
 RUN \
