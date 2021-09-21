@@ -1,10 +1,10 @@
-FROM centos:8
+FROM rockylinux:8
 
 # A base fmi image with proper repositories in place
 
 # These repos are unnecessary ...
 # They cause update problems in certain versions
-RUN rm -f /etc/yum.repos.d/CentOS-Vault.repo /etc/yum.repos.d/CentOS-Sources.repo
+# RUN rm -f /etc/yum.repos.d/CentOS-Vault.repo /etc/yum.repos.d/CentOS-Sources.repo
 
 # Prepare CI build scripts
 COPY ci-build.sh /usr/local/bin/ci-build.sh
