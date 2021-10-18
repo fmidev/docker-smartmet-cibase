@@ -117,10 +117,8 @@ RUN mkdir -m 777 /ccache && \
 # used anymore on docker build. Otherwise intermediate containers
 # may become large accidentally.
 # Also make some other last minute modifications
-RUN sed -i -e 's/keepcache=0//' /etc/yum.conf && \
-    echo keepcache=1 >> /etc/yum.conf && \
-    echo override_install_langs= >> /etc/yum.conf && \
-    echo tsflags= >> /etc/yum.conf && \
+RUN yum-config-manager --setopt="keepcache=1" --save && \
+    yum-config-manager --setopt="exclude=glibc*" --save && \
     echo 'PATH=/usr/local/bin:$PATH' >> /etc/bashrc && \
     echo 'export PATH' >> /etc/bashrc && \
     sed -i '/proxy=/d' /etc/yum.conf
