@@ -121,7 +121,8 @@ RUN yum-config-manager --setopt="keepcache=1" --save && \
     yum-config-manager --setopt="exclude=glibc*" --save && \
     echo 'PATH=/usr/local/bin:$PATH' >> /etc/bashrc && \
     echo 'export PATH' >> /etc/bashrc && \
-    sed -i '/proxy=/d' /etc/yum.conf
+    sed -i '/proxy=/d' /etc/yum.conf && \
+    sed -i -e 's|^#baseurl|baseurl|' -e 's|^metalink|#metalink|' -e 's=https://download.example/=https://ftp.funet.fi/pub/mirrors/fedora.redhat.com/=' /etc/yum.repos.d/epel*.repo
 
 # Run final stuff as rpmbuild
 USER rpmbuild
