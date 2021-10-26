@@ -118,11 +118,11 @@ RUN mkdir -m 777 /ccache && \
 # may become large accidentally.
 # Also make some other last minute modifications
 RUN yum-config-manager --setopt="keepcache=1" --save && \
-    yum-config-manager --setopt="exclude=glibc*" --save && \
     echo 'PATH=/usr/local/bin:$PATH' >> /etc/bashrc && \
     echo 'export PATH' >> /etc/bashrc && \
     sed -i '/proxy=/d' /etc/yum.conf && \
-    sed -r -i -e 's|^#baseurl|baseurl|' -e 's|^metalink|#metalink|' -e 's=(http://download.fedoraproject.org/|https://download.example/)=https://ftp.funet.fi/pub/mirrors/fedora.redhat.com/=' /etc/yum.repos.d/epel*.repo
+    sed -r -i -e 's|^#baseurl|baseurl|' -e 's|^metalink|#metalink|' -e 's=(http://download.fedoraproject.org/|https://download.example/)=https://ftp.funet.fi/pub/mirrors/fedora.redhat.com/=' /etc/yum.repos.d/epel*.repo && \
+    sed -r -i -e 's:^proxy:#proxy:' /etc/yum.repos.d/*repo
 
 # Run final stuff as rpmbuild
 USER rpmbuild
