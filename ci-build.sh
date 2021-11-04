@@ -1,7 +1,8 @@
 #!/bin/bash
 
-#_CXX_="clang++"
-_CXX_="g++"
+if [ -z "$_CXX_" ] ; then
+    _CXX_="g++"
+fi
 
 if [ -f .circleci/local-config ] ; then
     source .circleci/local-config
