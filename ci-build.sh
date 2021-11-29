@@ -60,6 +60,23 @@ echo RPM_BUILD_NCPUS=$RPM_BUILD_NCPUS
 test -d "$DISTDIR/." || insudo mkdir -p "$DISTDIR"
 export DISTDIR
 
+# Additional YUM options when required
+YUM_OPTIONS=
+if [ -f .circleci/enable-staging ] ; then
+    if [ -x /usr/bin/git ] ; then
+        branch=$(git branch --show-current)
+        case $branch in
+            master)
+                echo "Cannot use staging area for master branch"
+                exit 1
+                ;;
+            *)
+                YUM_OPTIONS="--enablerepo=smartmet-open-staging"
+                ;;
+        esac
+    fi
+fi
+
 # Help
 if [ "$#" -lt "1" ] ; then usage ; fi
 
@@ -121,11 +138,11 @@ while ! [ -z "$*" ] ; do
     shift
     case $step in
 	install)
-	    insudo yum install -y $(ls -1 $DISTDIR/*.rpm | grep -v src.rpm)
+	    insudo yum install -y $(YUM_OPTIONS) $(ls -1 $DISTDIR/*.rpm | grep -v src.rpm)
 	    ;;
 	deps)
 	    insudo yum -y clean all
-	    insudo yum-builddep --disablerepo="*source*" -y *.spec
+	    insudo yum-builddep --disablerepo="*source*" $(YUM_OPTIONS) -y *.spec
 	    ;;
 	testprep)
 	    # Symbolically link already installed smartmet .so and .a files here
@@ -137,7 +154,7 @@ while ! [ -z "$*" ] ; do
                xargs --no-run-if-empty -I LIB -P 10 -n 1 ln -svf LIB .
         insudo yum install -y git make || true # Install make regardless but ignore errors
 	    sed -e 's/^BuildRequires:/#BuildRequires:/' -e 's/^#TestRequires:/BuildRequires:/' < *.spec > /tmp/test.spec
-	    insudo yum-builddep -y /tmp/test.spec
+	    insudo yum-builddep -y $(YUM_OPTIONS) /tmp/test.spec
 	    ;;
 	test)
 	    test -r $test_disable && (
