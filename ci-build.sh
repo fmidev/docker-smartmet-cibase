@@ -70,7 +70,8 @@ if [ -f .circleci/enable-staging ] ; then
                 exit 1
                 ;;
             *)
-                yum-config-manager --enable smartmet-open-staging
+                echo ".circleci/enable-staging found: enabling smartmet-open-staging"
+                insudo yum-config-manager --verbose --enable smartmet-open-staging
                 ;;
         esac
     fi
