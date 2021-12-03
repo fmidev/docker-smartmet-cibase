@@ -64,16 +64,10 @@ export DISTDIR
 if [ -f .circleci/enable-staging ] ; then
     if [ -x /usr/bin/git ] ; then
         branch=$(git branch --show-current)
-        case $branch in
-            master)
-                echo "Cannot use staging area for master branch"
-                exit 1
-                ;;
-            *)
-                echo ".circleci/enable-staging found: enabling smartmet-open-staging"
-                insudo yum-config-manager --verbose --enable smartmet-open-staging
-                ;;
-        esac
+        if grep -P "^${branch}(|\s.*)\$" .circleci/enable-staging >/dev/null ; then
+            echo ".circleci/enable-staging contains current branch $branch: enabling smartmet-open-staging"
+            insudo yum-config-manager --verbose --enable smartmet-open-staging
+        fi
     fi
 fi
 
