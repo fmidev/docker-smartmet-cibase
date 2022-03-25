@@ -133,7 +133,7 @@ RUN sed -i -e 's/keepcache=0//' /etc/yum.conf && \
     echo 'export PATH' >> /etc/bashrc && \
     sed -i '/proxy=/d' /etc/yum.conf && \
     sed -i '/proxy=/d' /etc/dnf/dnf.conf && \
-    sed -i -e 's|^#baseurl|baseurl|' -e 's|^metalink|#metalink|' -e 's=https://download.example/=https://ftp.funet.fi/pub/mirrors/fedora.redhat.com/=' /etc/yum.repos.d/epel*.repo
+    sed -i -e 's|^#baseurl|baseurl|' -e 's|^metalink|#metalink|' -e "s=https://download.example/.*=$(for mirror in https://ftp.funet.fi/pub/mirrors/fedora.redhat.com/pub/epel https://fedora.cu.be/epel https://mirror.dogado.de; do echo -n $mirror/\$releasever/Everything/\$basearch' '; done)=" /etc/yum.repos.d/epel*.repo
 
 # Run final stuff as rpmbuild
 USER rpmbuild
