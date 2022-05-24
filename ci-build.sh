@@ -60,13 +60,19 @@ echo RPM_BUILD_NCPUS=$RPM_BUILD_NCPUS
 test -d "$DISTDIR/." || insudo mkdir -p "$DISTDIR"
 export DISTDIR
 
-# Enable smartmet-open-staging if .circleci/enable-staging is found
+# Enable smartmet-open-staging if .circleci/enable-staging is found and contains name of
+# of current GIT branch at the start of line (note enabling staging for master branch is
+# intentionally excluded from this)
 if [ -f .circleci/enable-staging ] ; then
     if [ -x /usr/bin/git ] ; then
-        branch=$(git branch --show-current)
-        if grep -P "^${branch}(|\s.*)\$" .circleci/enable-staging >/dev/null ; then
-            echo ".circleci/enable-staging contains current branch $branch: enabling smartmet-open-staging"
-            insudo yum-config-manager --verbose --enable smartmet-open-staging
+        branch=$(git branch | awk 'substr($0,0,1)=="*" {print $2}')
+        if ! [ -z "$branch" ] ; then
+            if [ "$branch" != "master" ] ; then
+                if grep -P "^${branch}(|\s.*)\$" .circleci/enable-staging >/dev/null ; then
+                    echo ".circleci/enable-staging contains current branch $branch: enabling smartmet-open-staging"
+                    insudo yum-config-manager --verbose --enable smartmet-open-staging
+                fi
+            fi
         fi
     fi
 fi
