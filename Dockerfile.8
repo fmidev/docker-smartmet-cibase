@@ -68,6 +68,7 @@ RUN . /usr/local/bin/proxydetect && \
  dnf config-manager --set-enabled powertools && \
  dnf config-manager --setopt=http_caching=packages --save && \
  dnf -y install https://download.fmi.fi/smartmet-open/rhel/8/x86_64/smartmet-open-release-latest-8.noarch.rpm && \
+ dnf -y install https://download.fmi.fi/smartmet-open/rhel/8/x86_64/smartmet-open-beta-latest-8.noarch.rpm && \
  dnf config-manager --enable smartmet-open-beta && \
  dnf -y install clang && \
  dnf -y install ccache && \
