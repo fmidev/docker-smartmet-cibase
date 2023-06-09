@@ -29,6 +29,8 @@ RUN echo ip_resolve=4 >> /etc/yum.conf && \
 ENV GOSU_VERSION 1.10
 RUN set -ex; . /usr/local/bin/proxydetect && \
         dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm && \
+        dnf config-manager --setopt="epel.exclude=eccodes*" --save && \
+        dnf config-manager --setopt="epel-modular.exclude=eccodes*" --save && \
         dnf -y install wget && \
 	dnf -y install dpkg && \
 	dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')" && \
