@@ -123,7 +123,7 @@ RUN yum-config-manager --setopt="keepcache=1" --save && \
     echo 'PATH=/usr/local/bin:$PATH' >> /etc/bashrc && \
     echo 'export PATH' >> /etc/bashrc && \
     sed -i '/proxy=/d' /etc/yum.conf && \
-    sed -r -i -e 's|^#baseurl|baseurl|' -e 's|^metalink|#metalink|' -e "s=(http://download.fedoraproject.org/|https://download.example/).*=$(for mirror in https://ftp.funet.fi/pub/mirrors/fedora.redhat.com/pub/epel https://fedora.cu.be/epel https://mirror.dogado.de; do echo -n $mirror/\$releasever/\$basearch' '; done)=" /etc/yum.repos.d/epel*.repo && \
+    sed -r -i -e 's|^#baseurl|baseurl|' -e "s=(http://download.fedoraproject.org/|https://download.example/).*=$(for mirror in https://ftp.funet.fi/pub/mirrors/fedora.redhat.com/pub/epel; do echo -n $mirror/\$releasever/\$basearch' '; done)=" /etc/yum.repos.d/epel*.repo && \
     sed -r -i -e 's:^proxy:#proxy:' /etc/yum.repos.d/*repo
 
 # Run final stuff as rpmbuild
