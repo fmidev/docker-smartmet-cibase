@@ -29,6 +29,7 @@ RUN echo ip_resolve=4 >> /etc/yum.conf && \
 ENV GOSU_VERSION 1.10
 RUN set -ex; . /usr/local/bin/proxydetect; \
 	yum -y install epel-release; \
+        yum-config-manager -q --setopt="epel.exclude=eccodes*" --save && \
 	yum -y install wget; \
 	yum -y install dpkg; \
 	dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
