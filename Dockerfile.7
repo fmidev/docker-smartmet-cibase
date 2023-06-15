@@ -29,7 +29,6 @@ RUN echo ip_resolve=4 >> /etc/yum.conf && \
 ENV GOSU_VERSION 1.10
 RUN set -ex; . /usr/local/bin/proxydetect; \
 	yum -y install epel-release; \
-        yum-config-manager -q --setopt="epel.exclude=eccodes*" --save && \
 	yum -y install wget; \
 	yum -y install dpkg; \
 	dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
@@ -77,7 +76,7 @@ RUN . /usr/local/bin/proxydetect && \
  yum -y install centos-release-scl &&  \
  yum -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
  yum-config-manager --disable "pgdg*" && \
- yum-config-manager --setopt="epel.exclude=librsvg2*" --save && \
+ yum-config-manager --setopt="epel.exclude=librsvg2* eccodes*" --save && \
  sed -i -e 's/-source\]$/-__source]/' /etc/yum.repos.d/*.repo && \
  yum -y update && \
  yum -y reinstall --setopt=override_install_langs='' --setopt=tsflags='' glibc-common && \
