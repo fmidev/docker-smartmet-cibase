@@ -1,0 +1,148 @@
+FROM rockylinux/rockylinux:10
+
+# A base fmi image with proper repositories in place
+
+# These repos are unnecessary ...
+# They cause update problems in certain versions
+# RUN rm -f /etc/yum.repos.d/CentOS-Vault.repo /etc/yum.repos.d/CentOS-Sources.repo
+
+# Prepare CI build scripts
+COPY ci-build.sh /usr/local/bin/ci-build.sh
+RUN ln -s ci-build.sh /usr/local/bin/ci-build
+
+# FMI proxy setup if needed
+COPY proxydetect.sh /usr/local/bin/proxydetect.sh
+RUN ln -s proxydetect.sh /usr/local/bin/proxydetect
+
+# Wrapper for uid manipulation and other stuff
+COPY wrapper.sh /usr/local/bin/wrapper.sh
+
+# Lock some library versions to prevent updates breaking smartmet-server
+COPY versionlock9.list /etc/yum/pluginconf.d/versionlock.list
+
+# Basic setup before running any yum commands
+RUN echo ip_resolve=4 >> /etc/yum.conf && \
+    . /usr/local/bin/proxydetect && \
+    curl -o /etc/yum.repos.d/libjpeg-turbo.repo https://raw.githubusercontent.com/libjpeg-turbo/repo/main/libjpeg-turbo.repo
+
+# Install gosu
+ENV GOSU_VERSION 1.10
+RUN set -ex; . /usr/local/bin/proxydetect && \
+	dnf -y install 'dnf-command(config-manager)' && \
+        dnf config-manager --set-enabled crb && \
+        dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm && \
+        dnf config-manager --setopt="epel.exclude=eccodes*" --save && \
+        dnf -y install wget && \
+	dnf -y install dpkg && \
+	dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')" && \
+	wget --quiet -O /usr/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch" && \
+	wget --quiet -O /tmp/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc" && \
+	export GNUPGHOME="$(mktemp -d)" && \
+	rm -fr "$GNUPGHOME" /tmp/gosu.asc && \
+	chmod +xs /usr/bin/gosu && \
+	gosu nobody true && \
+	dnf -y remove dpkg && \
+	dnf clean all && \
+ 	rm -rf /tmp/* /var/cache/yum
+
+# gosu nobody true: verify that the binary works
+
+# Signature verification could be done above:
+#	gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 ; \
+#	gpg --batch --verify /tmp/gosu.asc /usr/bin/gosu; \
+
+
+# Preinstall some packeges and enable extra repositories
+# Yum has a (mis)feature where the return value is 0 for multiple packages if any of them succeed.
+# Have to run every install in a single command as they all need to succeed.
+# Other extra things:
+#  - install libpqxx from Postgresql 12 repos but disable thet repo after it
+#  - reinstall glibc-common with changed lang settings. Otherwise we get errors when using locales.
+#    Not sure if this is necessary anymore. Installing glibc-all-langpacks could fix the issue
+#  - http caching is disabled to avoid EPEL problems
+#  - renames all source repos (s/source/__source) to prevent yum-builddep from picking them
+
+RUN . /usr/local/bin/proxydetect && \
+ dnf -y install rpm-build && \
+ dnf -y install yum-utils && \
+ dnf -y install yum-plugin-versionlock && \
+ dnf -y install dnf-plugins-core && \
+ dnf config-manager --setopt=http_caching=packages --save && \
+ dnf -y install https://download.fmi.fi/smartmet-open/rhel/10/x86_64/smartmet-open-release-latest-10.noarch.rpm && \
+ dnf -y install smartmet-open-beta && \
+ dnf config-manager --enable smartmet-open-beta && \
+ dnf -y install clang && \
+ dnf -y install ccache && \
+ dnf -y install createrepo_c && \
+ dnf -y install git && \
+ dnf -y install make && \
+ dnf -y install sudo && \
+ dnf -y --nogpgcheck install libjpeg-turbo-official && \
+ dnf -y install rpmlint && \
+ sed -i -e 's/-source\]$/-__source]/' /etc/yum.repos.d/*.repo && \
+ dnf -y update && \
+ dnf -y install "glibc-langpack-*" && \
+ ln -sf /usr/share/zoneinfo/Europe/Helsinki /etc/localtime && \
+ dnf clean all && \
+ rm -rf /var/cache/yum
+
+# RHEL7 way is below, RHEL8 way is to supposedly install glibc-all-langpacks, but it seems to be
+# broken in CentOS 8. Hence we install the langpacks with a pattern
+#
+# RHEL7:
+# dnf -y reinstall --setopt=override_install_langs='' --setopt=tsflags='' glibc-common
+
+
+## Configure sudo
+RUN mkdir -p /etc/sudoers.d && echo 'ALL ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/all && \
+	useradd rpmbuild
+
+## Install CirleCI CLI
+RUN . /usr/local/bin/proxydetect && curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/master/install.sh | bash
+
+# Cleanup, leave YUM cache empty initially
+RUN \
+ dnf clean all && \
+ rm -rf /var/cache/yum && \
+ mkdir -p /var/cache/yum && \
+ rm -f /root/anaconda-ks.cfg /anaconda-post.log && \
+ mkdir -p /dist && \
+ chmod 4777 /dist/. && \
+ rm -rf /tmp/*
+
+# Prepare ccache usage. Build timeouts are greatly reduced, if
+# /ccache is mounted from host environment
+RUN mkdir -m 777 /ccache && \
+    echo cache_dir=/ccache > /etc/ccache.conf && \
+    echo umask=000 >> /etc/ccache.conf && \
+    ln -s /usr/bin/ccache /usr/local/bin/c++ && \
+    ln -s /usr/bin/ccache /usr/local/bin/g++ && \
+    ln -s /usr/bin/ccache /usr/local/bin/gcc && \
+    ln -s /usr/bin/ccache /usr/local/bin/cc && \
+    ln -s /usr/bin/ccache /usr/local/bin/clang++
+
+# Keep yum cache around
+# Useful for multiple runs of the same machine, if /var/cache/yum is mounted from host environment.
+# This step must be done in the end so that yum is not going to be
+# used anymore on docker build. Otherwise intermediate containers
+# may become large accidentally.
+# Also make some other last minute modifications
+RUN sed -i -e 's/keepcache=0//' /etc/yum.conf && \
+    echo keepcache=1 >> /etc/yum.conf && \
+    echo 'PATH=/usr/local/bin:$PATH' >> /etc/bashrc && \
+    echo 'export PATH' >> /etc/bashrc && \
+    sed -i '/proxy=/d' /etc/yum.conf && \
+    sed -i '/proxy=/d' /etc/dnf/dnf.conf
+
+# Run final stuff as rpmbuild
+USER rpmbuild
+
+# Always run certain autodetection steps
+# Sadly, CircleCI Local CLI apparently overrides entrypoint
+ENTRYPOINT [ "/usr/local/bin/wrapper.sh" ]
+
+# Run shell
+CMD ["/bin/bash"]
+
+VOLUME /var/cache/yum
+VOLUME /ccache
