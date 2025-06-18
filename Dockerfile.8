@@ -22,7 +22,7 @@ COPY versionlock8.list /etc/yum/pluginconf.d/versionlock.list
 
 # Basic setup before running any yum commands
 RUN echo ip_resolve=4 >> /etc/yum.conf && \
-    echo install_weak_deps=False >> /etc/yum/conf
+    echo ip_resolve=4 >> /etc/dnf/dnf.conf
 
 # Install gosu
 ENV GOSU_VERSION 1.10
