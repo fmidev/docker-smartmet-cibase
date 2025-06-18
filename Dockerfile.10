@@ -20,11 +20,6 @@ COPY wrapper.sh /usr/local/bin/wrapper.sh
 # Lock some library versions to prevent updates breaking smartmet-server
 COPY versionlock9.list /etc/yum/pluginconf.d/versionlock.list
 
-# Basic setup before running any yum commands
-RUN echo ip_resolve=4 >> /etc/yum.conf && \
-    . /usr/local/bin/proxydetect && \
-    curl -o /etc/yum.repos.d/libjpeg-turbo.repo https://raw.githubusercontent.com/libjpeg-turbo/repo/main/libjpeg-turbo.repo
-
 # Install gosu
 ENV GOSU_VERSION 1.10
 RUN set -ex; . /usr/local/bin/proxydetect && \
@@ -77,7 +72,7 @@ RUN . /usr/local/bin/proxydetect && \
  dnf -y install git && \
  dnf -y install make && \
  dnf -y install sudo && \
- dnf -y --nogpgcheck install libjpeg-turbo-official && \
+ dnf -y install libjpeg-turbo && \
  dnf -y install rpmlint && \
  sed -i -e 's/-source\]$/-__source]/' /etc/yum.repos.d/*.repo && \
  dnf -y update && \
