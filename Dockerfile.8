@@ -22,8 +22,7 @@ COPY versionlock8.list /etc/yum/pluginconf.d/versionlock.list
 
 # Basic setup before running any yum commands
 RUN echo ip_resolve=4 >> /etc/yum.conf && \
-    . /usr/local/bin/proxydetect && \
-    curl -O /etc/yum.repos.d/libjpeg-turbo.repo https://libjpeg-turbo.org/pmwiki/uploads/Downloads/libjpeg-turbo.repo
+    echo install_weak_deps=False >> /etc/yum/conf
 
 # Install gosu
 ENV GOSU_VERSION 1.10

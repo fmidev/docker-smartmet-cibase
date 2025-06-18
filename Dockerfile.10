@@ -20,6 +20,10 @@ COPY wrapper.sh /usr/local/bin/wrapper.sh
 # Lock some library versions to prevent updates breaking smartmet-server
 COPY versionlock9.list /etc/yum/pluginconf.d/versionlock.list
 
+# Basic setup before running any yum commands
+RUN echo ip_resolve=4 >> /etc/yum.conf && \
+    echo install_weak_deps=False >> /etc/yum/conf
+
 # Install gosu
 ENV GOSU_VERSION 1.10
 RUN set -ex; . /usr/local/bin/proxydetect && \
