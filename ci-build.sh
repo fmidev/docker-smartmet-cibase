@@ -142,7 +142,7 @@ while ! [ -z "$*" ] ; do
 	    ;;
 	deps)
 	    insudo yum -y clean all
-	    insudo yum-builddep --disablerepo="*source*" -y *.spec
+	    insudo dnf builddep --disablerepo="*source*" -y *.spec
 	    ;;
 	testprep)
 	    # Symbolically link already installed smartmet .so and .a files here
@@ -154,7 +154,7 @@ while ! [ -z "$*" ] ; do
                xargs --no-run-if-empty -I LIB -P 10 -n 1 ln -svf LIB .
         insudo yum install -y git make || true # Install make regardless but ignore errors
 	    sed -e 's/^BuildRequires:/#BuildRequires:/' -e 's/^#TestRequires:/BuildRequires:/' < *.spec > /tmp/test.spec
-	    insudo yum-builddep -y /tmp/test.spec
+	    insudo dnf builddep -y /tmp/test.spec
 	    ;;
 	test)
 	    test -r $test_disable && (
