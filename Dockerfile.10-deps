@@ -1,0 +1,26 @@
+# smartmet-cibase-10 with the external build and test dependencies of all
+# SmartMet modules preinstalled. Intended for smartmet-rpm-build-all, where
+# installing the same ~400 packages and downloading the repository metadata
+# in every job used to take most of the workflow time.
+#
+# Rebuild nightly so that the preinstalled packages and the metadata cache
+# stay current.
+
+FROM quay.io/fmi/smartmet-cibase-10:latest
+
+USER root
+
+# The base image may predate CI_BUILD_LOCAL_REPOS support in ci-build
+COPY ci-build.sh /usr/local/bin/ci-build.sh
+
+COPY prebake-deps.sh deps-modules.list /tmp/
+RUN . /usr/local/bin/proxydetect && \
+    /tmp/prebake-deps.sh /tmp/deps-modules.list master && \
+    rm -f /tmp/prebake-deps.sh /tmp/deps-modules.list && \
+    rm -rf /tmp/*
+
+# Picked up by ci-build: try installing from these repositories only
+# (with the cached metadata) before falling back to all enabled repositories
+ENV CI_BUILD_LOCAL_REPOS="localrepo smartmet-open-noarch"
+
+USER rpmbuild

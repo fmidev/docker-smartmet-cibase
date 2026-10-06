@@ -80,6 +80,17 @@ fi
 # Help
 if [ "$#" -lt "1" ] ; then usage ; fi
 
+# If CI_BUILD_LOCAL_REPOS is set (space separated repository ids), dependency
+# installation is first attempted with only those repositories enabled. This
+# succeeds without any network access when the image already contains the
+# external dependencies (see Dockerfile.10-deps). Otherwise we fall back to
+# all enabled repositories. The dnf metadata cache is kept in that case, since
+# such images ship with a prepopulated cache.
+function local_repo_opts {
+    echo --disablerepo='*'
+    for r in $CI_BUILD_LOCAL_REPOS ; do echo --enablerepo="$r" ; done
+}
+
 # Quick test disable: if this file exists, won't run make test
 test_disable=.circleci/disable-tests-in-ci
 
@@ -141,9 +152,13 @@ while ! [ -z "$*" ] ; do
 	    insudo yum install -y $(ls -1 $DISTDIR/*.rpm | grep -v src.rpm)
 	    ;;
 	deps)
-	    insudo yum -y clean all
 	    ls -la $DISTDIR
-	    insudo dnf builddep -v --disablerepo="*source*" -y *.spec
+	    if [ -n "$CI_BUILD_LOCAL_REPOS" ] && insudo dnf builddep -y $(local_repo_opts) *.spec ; then
+		echo "Build dependencies satisfied from preinstalled packages and $CI_BUILD_LOCAL_REPOS"
+	    else
+		test -n "$CI_BUILD_LOCAL_REPOS" || insudo yum -y clean all
+		insudo dnf builddep -v --disablerepo="*source*" -y *.spec
+	    fi
 	    ;;
 	testprep)
 	    # Symbolically link already installed smartmet .so and .a files here
@@ -153,9 +168,13 @@ while ! [ -z "$*" ] ; do
                xargs --no-run-if-empty -I LIB -P 10 -n 1 ln -svf LIB .
         rpm -qal | grep 'smartmet-[^/]*[.]a$' | \
                xargs --no-run-if-empty -I LIB -P 10 -n 1 ln -svf LIB .
-        insudo yum install -y git make || true # Install make regardless but ignore errors
+        rpm -q git make >/dev/null || insudo yum install -y git make || true # Install make regardless but ignore errors
 	    sed -e 's/^BuildRequires:/#BuildRequires:/' -e 's/^#TestRequires:/BuildRequires:/' < *.spec > /tmp/test.spec
-	    insudo dnf builddep -y /tmp/test.spec
+	    if [ -n "$CI_BUILD_LOCAL_REPOS" ] && insudo dnf builddep -y $(local_repo_opts) /tmp/test.spec ; then
+		echo "Test dependencies satisfied from preinstalled packages and $CI_BUILD_LOCAL_REPOS"
+	    else
+		insudo dnf builddep -y /tmp/test.spec
+	    fi
 	    ;;
 	test)
 	    test -r $test_disable && (
