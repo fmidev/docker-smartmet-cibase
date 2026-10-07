@@ -2,52 +2,46 @@ version: 2.1
 jobs:
   build-rhel7:
     docker:
-      - image: rockylinux:9
+      - image: cimg/base:stable
     steps:
       - checkout
-      - run:
-          name: Install build dependencies
-          command: |
-             sudo dnf install podman-docker
+
+      - setup_remote_docker:
+          version: default
+
       - run:
           name: Build Docker image
           command: ./build.sh 7
 
-  build-rhel8:
+  build-rocky8:
     docker:
-      - image: rockylinux:9
+      - image: cimg/base:stable
     steps:
       - checkout
-      - run:
-          name: Install build dependencies
-          command: |
-             sudo dnf install podman-docker
+      - setup_remote_docker:
+          version: default
       - run:
           name: Build Docker image
           command: ./build.sh 8
 
-  build-rhel9:
+  build-rocky9:
     docker:
-      - image: rockylinux:9
+      - image: cimg/base:stable
     steps:
       - checkout
-      - run:
-          name: Install build dependencies
-          command: |
-             sudo dnf install podman-docker
+      - setup_remote_docker:
+          version: default
       - run:
           name: Build Docker image
           command: ./build.sh 9
 
-  build-rhel10:
+  build-rocky10:
     docker:
-      - image: rockylinux:9
+      - image: cimg/base:stable
     steps:
       - checkout
-      - run:
-          name: Install build dependencies
-          command: |
-             sudo dnf install podman-docker
+      - setup_remote_docker:
+          version: default
       - run:
           name: Build Docker image
           command: ./build.sh 10
@@ -57,6 +51,6 @@ workflows:
   build-test:
     jobs:
       - build-rhel7
-      - build-rhel8
-      - build-rhel9
-      - build-rhel10
+      - build-rocky8
+      - build-rocky9
+      - build-rocky10
