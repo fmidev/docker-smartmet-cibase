@@ -11,9 +11,11 @@
 # module is harmless and makes the result independent of spec parsing.
 #
 # Strategy:
-#   1. dnf builddep each spec and its #TestRequires with all repos enabled.
-#      This pulls in smartmet-* packages from smartmet-open(-beta) together
-#      with all of their external dependencies.
+#   1. dnf builddep each spec and its #TestRequires with the same repositories
+#      that smartmet-rpm-build-all jobs use, i.e. without smartmet-open and
+#      smartmet-open-beta. Otherwise newer versions of system libraries from
+#      smartmet-open (e.g. librsvg2 on RHEL8) end up in the image and conflict
+#      with packages the jobs can only get from the distribution repositories.
 #   2. Remove the packages of the modules built in CI again (rpm -e --nodeps).
 #      CI jobs must build against the RPMs produced in the same workflow, never
 #      against whatever happened to be in smartmet-open when the image was
@@ -67,18 +69,21 @@ done
 
 echo "Downloaded $(ls "$specdir" | wc -l) spec files"
 
-dnf -y update
+# Repositories disabled in smartmet-rpm-build-all jobs (see its config.tmpl.yml)
+ci_repos="--disablerepo=smartmet-open --disablerepo=smartmet-open-beta --disablerepo=*source*"
+
+dnf -y update $ci_repos
 
 for spec in "$specdir"/*.spec ; do
     m=$(basename "$spec" .spec)
     echo "=== Build dependencies of $m"
-    dnf builddep -y --skip-unavailable --disablerepo='*source*' "$spec" || failed+=("$m")
+    dnf builddep -y --skip-unavailable $ci_repos "$spec" || failed+=("$m")
 
     if grep -q '^#TestRequires:' "$spec" ; then
         echo "=== Test dependencies of $m"
         sed -e 's/^BuildRequires:/#BuildRequires:/' -e 's/^#TestRequires:/BuildRequires:/' \
             < "$spec" > "$specdir/test.spec.tmp"
-        dnf builddep -y --skip-unavailable --disablerepo='*source*' "$specdir/test.spec.tmp" || failed+=("$m(test)")
+        dnf builddep -y --skip-unavailable $ci_repos "$specdir/test.spec.tmp" || failed+=("$m(test)")
         rm -f "$specdir/test.spec.tmp"
     fi
 done
