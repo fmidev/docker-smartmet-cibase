@@ -37,7 +37,20 @@ jobs:
              sudo dnf install podman-docker
       - run:
           name: Build Docker image
-          command: ./build.sh 8
+          command: ./build.sh 9
+
+  build-rhel10:
+    docker:
+      - image: rockylinux:9
+    steps:
+      - checkout
+      - run:
+          name: Install build dependencies
+          command: |
+             sudo dnf install podman-docker
+      - run:
+          name: Build Docker image
+          command: ./build.sh 10
 
 workflows:
   version: 2.1
@@ -46,3 +59,4 @@ workflows:
       - build-rhel7
       - build-rhel8
       - build-rhel9
+      - build-rhel10
