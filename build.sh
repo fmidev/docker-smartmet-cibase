@@ -16,9 +16,9 @@ test ! -r "$testfile" || (
 param=""
 
 if [ -e "$testfile" ] ; then
-	docker build  --isolation=chroot -t smartmet-cibase-${VERSION} -f Dockerfile.${VERSION} .
+	docker build  -t smartmet-cibase-${VERSION} -f Dockerfile.${VERSION} .
 else
-	docker build  --isolation=chroot --no-cache -t smartmet-cibase-${VERSION} -f Dockerfile.${VERSION} .
+	docker build  --no-cache -t smartmet-cibase-${VERSION} -f Dockerfile.${VERSION} .
 fi
 
 # docker push smartmet-cibase-${VERSION}:latest
