@@ -14,9 +14,11 @@
 #   1. dnf builddep each spec and its #TestRequires with all repos enabled.
 #      This pulls in smartmet-* packages from smartmet-open(-beta) together
 #      with all of their external dependencies.
-#   2. Remove all smartmet-* packages again (rpm -e --nodeps). CI jobs must
-#      build against the RPMs produced in the same workflow, never against
-#      whatever happened to be in smartmet-open when the image was built.
+#   2. Remove the packages of the modules built in CI again (rpm -e --nodeps).
+#      CI jobs must build against the RPMs produced in the same workflow, never
+#      against whatever happened to be in smartmet-open when the image was
+#      built. Other smartmet-* packages (e.g. smartmet-SFCGAL-libs) are kept,
+#      and the build fails if anything that stays has lost a dependency.
 #   3. Keep the dnf metadata cache so that jobs do not need to download it.
 #
 # Failures of individual specs are reported but do not fail the image build:
@@ -81,14 +83,40 @@ for spec in "$specdir"/*.spec ; do
     fi
 done
 
-# Drop every smartmet package except the repository definitions
-smartmet=$(rpm -qa --qf '%{NAME}\n' | grep '^smartmet-' | grep -v '^smartmet-open' | sort -u)
-if [ -n "$smartmet" ] ; then
-    echo "Removing smartmet packages:" $smartmet
-    rpm -e --nodeps $smartmet
+# Source package names of the modules built in CI. Their binary packages
+# (including subpackages such as -devel) must not stay in the image. Other
+# smartmet-* packages, such as smartmet-SFCGAL-libs needed by gdal, are
+# external dependencies like any other and are kept.
+declare -A built
+for spec in "$specdir"/*.spec ; do
+    name=$(rpmspec -q --srpm --qf '%{NAME}\n' "$spec" 2>/dev/null | tail -1)
+    built[${name:-$(basename "$spec" .spec)}]=1
+done
+
+# Large data-only packages are dropped as well to keep the image small.
+# Test jobs install them from smartmet-open-noarch when needed.
+remove=()
+while read -r pkg srpm ; do
+    src=$(echo "$srpm" | sed -e 's/-[^-]*-[^-]*\.src\.rpm$//')
+    case "$pkg" in
+        smartmet-test-data|smartmet-topography-data|smartmet-qdtools-test-data) remove+=("$pkg") ;;
+        *) [ -n "${built[$src]:-}" ] && remove+=("$pkg") ;;
+    esac
+done < <(rpm -qa --qf '%{NAME} %{SOURCERPM}\n' 'smartmet-*')
+
+if [ ${#remove[@]} -gt 0 ] ; then
+    echo "Removing packages built in CI:" "${remove[@]}"
+    rpm -e --nodeps "${remove[@]}"
 fi
 
 rm -rf "$specdir"
+
+# Nothing that stays may have lost a dependency in the removal above.
+# Otherwise jobs succeed in installing dependencies but fail to link.
+if ! dnf check --dependencies ; then
+    echo "ERROR: packages left in the image have missing dependencies"
+    exit 1
+fi
 
 # Keep metadata, drop downloaded packages
 dnf clean packages
