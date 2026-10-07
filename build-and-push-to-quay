@@ -1,0 +1,18 @@
+#! /bin/sh
+
+case $1 in
+    8|9|10) ;;
+    8-deps|9-deps|10-deps) ;;
+    *)
+        echo "Usage: $0 {8|9|10}[-deps]"
+        exit 1
+        ;;
+esac
+
+timestamp=$(date +%Y%m%d-%H%M)
+
+./build.sh $1 && \
+docker image tag smartmet-cibase-$1:latest quay.io/fmi/smartmet-cibase-$1:latest && \
+docker image tag smartmet-cibase-$1:latest quay.io/fmi/smartmet-cibase-$1:$timestamp && \
+docker push quay.io/fmi/smartmet-cibase-$1:latest && \
+docker push quay.io/fmi/smartmet-cibase-$1:$timestamp
