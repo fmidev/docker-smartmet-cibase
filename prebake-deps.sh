@@ -69,8 +69,9 @@ done
 
 echo "Downloaded $(ls "$specdir" | wc -l) spec files"
 
-# Repositories disabled in smartmet-rpm-build-all jobs (see its config.tmpl.yml)
-ci_repos="--disablerepo=smartmet-open --disablerepo=smartmet-open-beta --disablerepo=*source*"
+# Repositories disabled in smartmet-rpm-build-all jobs (see its config.tmpl.yml). The
+# debuginfo repositories of RHEL8 and RHEL9 contain old binary packages too.
+ci_repos="--disablerepo=smartmet-open --disablerepo=smartmet-open-beta --disablerepo=*debuginfo* --disablerepo=*source*"
 
 dnf -y update $ci_repos
 
