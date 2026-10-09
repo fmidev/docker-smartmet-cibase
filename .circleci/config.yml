@@ -1,18 +1,5 @@
 version: 2.1
 jobs:
-  build-rhel7:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - checkout
-
-      - setup_remote_docker:
-          version: default
-
-      - run:
-          name: Build Docker image
-          command: ./build.sh 7
-
   build-rocky8:
     docker:
       - image: cimg/base:stable
@@ -50,7 +37,6 @@ workflows:
   version: 2.1
   build-test:
     jobs:
-      - build-rhel7
       - build-rocky8
       - build-rocky9
       - build-rocky10
