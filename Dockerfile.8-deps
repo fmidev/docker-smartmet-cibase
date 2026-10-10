@@ -6,7 +6,7 @@
 # Rebuild nightly so that the preinstalled packages and the metadata cache
 # stay current.
 
-FROM fmidev/smartmet-cibase-8:latest
+FROM quay.io/fmi/smartmet-cibase-8:latest
 
 USER root
 
