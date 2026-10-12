@@ -1,42 +1,81 @@
 version: 2.1
+
+# Required project environment variables:
+#   QUAY_USERNAME - quay.io user (robot account) with push access to quay.io/fmi
+#   QUAY_PASSWORD - password / token for QUAY_USERNAME
+
+commands:
+  generate-timestamp:
+    description: Generate a timestamp shared by all images built in this job
+    steps:
+      - run:
+          name: Generate image timestamp tag
+          command: |
+            IMAGE_TIMESTAMP=$(date -u +%Y%m%d_%H%M%S)
+            echo "export IMAGE_TIMESTAMP=${IMAGE_TIMESTAMP}" >> "$BASH_ENV"
+            echo "Image timestamp tag: ${IMAGE_TIMESTAMP}"
+
+  quay-login:
+    description: Log in to quay.io
+    steps:
+      - run:
+          name: Log in to quay.io
+          command: echo "$QUAY_PASSWORD" | docker login -u "$QUAY_USERNAME" --password-stdin quay.io
+
+  build-and-push:
+    description: Build an image and push it to quay.io with tags latest and $IMAGE_TIMESTAMP
+    parameters:
+      image:
+        type: string
+        description: Image name without registry and tag (e.g. smartmet-cibase-10)
+      dockerfile:
+        type: string
+      build-args:
+        type: string
+        default: ""
+    steps:
+      - run:
+          name: Build << parameters.image >>
+          command: |
+            docker build --no-cache << parameters.build-args >> \
+              -t quay.io/fmi/<< parameters.image >>:${IMAGE_TIMESTAMP} \
+              -t quay.io/fmi/<< parameters.image >>:latest \
+              -f << parameters.dockerfile >> .
+      - run:
+          name: Push << parameters.image >>
+          command: |
+            docker push quay.io/fmi/<< parameters.image >>:${IMAGE_TIMESTAMP}
+            docker push quay.io/fmi/<< parameters.image >>:latest
+
 jobs:
-  build-rocky8:
+  build-rocky:
+    parameters:
+      version:
+        type: string
     docker:
       - image: cimg/base:stable
     steps:
       - checkout
       - setup_remote_docker:
           version: default
-      - run:
-          name: Build Docker image
-          command: ./build.sh 8
-
-  build-rocky9:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - checkout
-      - setup_remote_docker:
-          version: default
-      - run:
-          name: Build Docker image
-          command: ./build.sh 9
-
-  build-rocky10:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - checkout
-      - setup_remote_docker:
-          version: default
-      - run:
-          name: Build Docker image
-          command: ./build.sh 10
+      - generate-timestamp
+      - quay-login
+      - build-and-push:
+          image: smartmet-cibase-<< parameters.version >>
+          dockerfile: Dockerfile.<< parameters.version >>
+          build-args: --pull
+      # Build on top of the base image built above (available locally, no pull)
+      - build-and-push:
+          image: smartmet-cibase-<< parameters.version >>-deps
+          dockerfile: Dockerfile.<< parameters.version >>-deps
+          build-args: --build-arg BASE_IMAGE=quay.io/fmi/smartmet-cibase-<< parameters.version >>:${IMAGE_TIMESTAMP}
 
 workflows:
   version: 2.1
   build-test:
     jobs:
-      - build-rocky8
-      - build-rocky9
-      - build-rocky10
+      - build-rocky:
+          name: build-rocky<< matrix.version >>
+          matrix:
+            parameters:
+              version: ["8", "9", "10"]
