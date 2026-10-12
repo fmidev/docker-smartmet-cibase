@@ -20,18 +20,21 @@ if [ "$targetuid" != "0" ] ; then
 fi
 
 # Make sure certain file permissions are ok on host system
-if [  "$targetuid" != "0" ] ; then sudo chown -R $targetuid.$targetgid /var/cache/yum /ccache ; fi
+if [  "$targetuid" != "0" ] ; then sudo chown -R $targetuid:$targetgid /var/cache/yum /ccache ; fi
 test -e /etc/ccache.conf && \
-  sudo chown -R $targetuid.$targetgid /etc/ccache.conf && \
+  sudo chown -R $targetuid:$targetgid /etc/ccache.conf && \
   sudo chmod 777 /etc/ccache.conf
 
 
-# Run as the target user
+# Run as the target user, keeping the exit status of the command
 if [ "$targetuid" != "`id -u`" ] ; then
-	sudo -u u$targetuid "$@" 
+	sudo -u u$targetuid "$@"
 else
 	"$@"
 fi
+status=$?
 
 # Make sure certain file permissions are left ok on host system
-if [  "$targetuid" != "0" ] ; then sudo chown -R $targetuid.$targetgid /var/cache/yum /ccache ; fi
+if [  "$targetuid" != "0" ] ; then sudo chown -R $targetuid:$targetgid /var/cache/yum /ccache ; fi
+
+exit $status
