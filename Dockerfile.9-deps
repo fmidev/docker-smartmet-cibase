@@ -6,7 +6,8 @@
 # Rebuild nightly so that the preinstalled packages and the metadata cache
 # stay current.
 
-FROM quay.io/fmi/smartmet-cibase-9:latest
+ARG BASE_IMAGE=quay.io/fmi/smartmet-cibase-9:latest
+FROM ${BASE_IMAGE}
 
 USER root
 
